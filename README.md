@@ -28,3 +28,4 @@ If you're on Linux, your distribution may or may not provide a package.
 
 * If we have the Unix DAC permissions to open the device directly, we should do that.
 * If both `if=` and `of=` are both block devices to be opened by `udisks(8)`, and polkit dictates interactive authorization, there will be 2 separate authentication prompts.
+* We should hide Python tracebacks if the environment variable UDD_DEBUG is not set.
