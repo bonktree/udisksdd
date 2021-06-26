@@ -64,7 +64,7 @@ def _udd_parse_oflag(key, val):
 def udd():
     if udd_is_privileged():
         # Fast path: we are not needed at all.
-        os.execlp(sys.argv[0], sys.argv)
+        os.execvp('dd', sys.argv)
 
     r_filename = None
     rflags = 0
