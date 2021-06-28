@@ -23,12 +23,26 @@ def show_usage():
     call_dd(('dd', '--help'))
 
 def call_dd(argv):
-    logging.debug("Execcing dd with %r", argv)
     try:
-        os.execvp(argv[0], argv)
+        logging.debug("Execcing dd with %r", argv)
+        os.execvp('dd', argv)
     except:
         logging.exception("os.exec")
         return 1
+
+def call_privileged_dd(argv):
+    progs = (
+        '/usr/bin/dd',
+        '/bin/dd',
+    )
+    for prog in progs:
+        try:
+            logging.debug("Execcing %r with %r", prog, argv)
+            os.execv(prog, argv)
+        except:
+            logging.exception("os.exec")
+            continue
+    return 1
 
 def udd_is_privileged():
     """Determines if the process is privileged enough to universally open
@@ -64,7 +78,9 @@ def _udd_parse_oflag(key, val):
 def udd():
     if udd_is_privileged():
         # Fast path: we are not needed at all.
-        os.execvp('dd', sys.argv)
+        # To work around a possibly insecure PATH,
+        # we try one of the following paths in order.
+        return call_privileged_dd(sys.argv)
 
     r_filename = None
     rflags = 0
