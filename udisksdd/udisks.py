@@ -37,7 +37,7 @@ class UDisks:
     def object_path_from_fn(self, fn):
         fna = fn.lstrip('/dev/')
         if fna.find('/') < 0 and util.is_blockdev(fn):
-            fastpath = self._path_from_fn_fast(fna)
+            fastpath = self._object_path_from_fn_fast(fna)
             logging.debug("Assuming {}; skipping Manager.ResolveDevice call"
                     .format(fastpath))
             return fastpath
@@ -48,7 +48,7 @@ class UDisks:
     def open_device(self, devicefn, flag):
         # OpenForBackup: O_EXCL
         # OpenForRestore: O_EXCL, O_SYNC
-        blockdev_path = self.path_from_fn(devicefn)
+        blockdev_path = self.object_path_from_fn(devicefn)
         blockdev_object = self._get_bus_object(blockdev_path)
         intf = '.'.join((self._udisks_prefix, 'Block'))
         Block = dbus.Interface(blockdev_object, intf)

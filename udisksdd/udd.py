@@ -54,7 +54,7 @@ def udd_is_privileged():
 def udd_is_directly_accessible(flag=None):
     """Determines if the device node is accessible to this process to be opened
        directly. Accepts flags for os.open().
-       """
+    """
     # TODO
     return False
 
