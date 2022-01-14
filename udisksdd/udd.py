@@ -2,6 +2,8 @@ import logging
 import os
 import sys
 
+import dbus.exceptions
+
 from .udisks import UDisks
 from . import util
 
@@ -75,7 +77,7 @@ def _udd_parse_oflag(key, val):
     if val == 'noatime': return os.O_NOATIME
     return 0
 
-def udd():
+def udd(**kwargs):
     if udd_is_privileged():
         # Fast path: we are not needed at all.
         # To work around a possibly insecure PATH,
@@ -119,11 +121,19 @@ def udd():
     U = UDisks()
     if r_filename:
         logging.debug("Pre-opening if={}".format(r_filename))
-        rfd = U.open_device(r_filename, os.O_RDONLY | rflags)
+        try:
+            rfd = U.open_device(r_filename, os.O_RDONLY | rflags)
+        except dbus.exceptions.DBusException as e:
+            logging.exception("DBus error reply: %s", e, exc_info=kwargs['exc_info'])
+            return 1
         rfd = rfd.take()
     if w_filename:
         logging.debug("Pre-opening of={}".format(w_filename))
-        wfd = U.open_device(w_filename, os.O_WRONLY | wflags)
+        try:
+            wfd = U.open_device(w_filename, os.O_WRONLY | wflags)
+        except dbus.exceptions.DBusException as e:
+            logging.exception("DBus error reply: %s", e, exc_info=kwargs['exc_info'])
+            return 1
         wfd = wfd.take()
 
     pid = os.fork()
