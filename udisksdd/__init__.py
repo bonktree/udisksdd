@@ -4,6 +4,7 @@ import os
 import sys
 from . import udd
 
+
 def main():
     if os.getenv('UDD_DEBUG'):
         exc_info = True
@@ -14,5 +15,6 @@ def main():
     logging.basicConfig(stream=sys.stderr, level=loglevel)
     return udd.udd(exc_info=exc_info)
 
+
 if __name__ == '__main__':
-    exit(main())
+    sys.exit(main())
