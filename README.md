@@ -6,10 +6,10 @@ If the udisks API access is allowed by polkit policy, no privilege elevation is 
 
 ### Details of Operation
 
-If `udd(1)` is invoked with a block device node located in /dev as an input or output, it will try to ask udisks2 to open that device on its behalf.
+If `udd(1)` is invoked with a block device node located in `/dev` as an input or output, it will try to ask udisks2 to open that device on its behalf.
 udisks, in turn, will check if `udd(1)` is authorized to perform the polkit action `org.freedesktop.udisks2.open-device` (or `*.open-device-system`, see [udisks documentation](http://storaged.org/doc/udisks2-api/latest/udisks-polkit-actions.html)) on that device.
 `udd(1)` understands enough `dd(1)` syntax to pass the relevant open(2)-style flags to `udisks`' `Block.OpenDevice` method.
-If the descriptors is obtained successfully, `udd(1)` then forks off `dd(1)` and passes the descriptors as standard I/O.
+If the descriptors are obtained successfully, `udd(1)` then forks off `dd(1)` and passes the descriptors as standard I/O.
 
 If udd is invoked as uid 0, it executes `dd(1)` immediately.
 
