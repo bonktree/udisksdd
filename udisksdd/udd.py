@@ -28,7 +28,7 @@ def call_dd(argv):
     try:
         logging.debug("Execcing dd with %r", argv)
         os.execvp('dd', argv)
-    except:
+    except Exception:
         logging.exception("os.exec")
         return 1
 
@@ -41,7 +41,7 @@ def call_privileged_dd(argv):
         try:
             logging.debug("Execcing %r with %r", prog, argv)
             os.execv(prog, argv)
-        except:
+        except Exception:
             logging.exception("os.exec")
             continue
     return 1
