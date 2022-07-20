@@ -77,22 +77,14 @@ def _udd_parse_oflag(key, val):
     if val == 'noatime': return os.O_NOATIME
     return 0
 
-def udd(**kwargs):
-    if udd_is_privileged():
-        # Fast path: we are not needed at all.
-        # To work around a possibly insecure PATH,
-        # we try one of the following paths in order.
-        return call_privileged_dd(sys.argv)
 
-    r_filename = None
-    rflags = 0
-    rfd = None
-    w_filename = None
-    wflags = 0
-    wfd = None
-
+def _read_dd_cli_arguments(av):
     newargv = []
-    for arg in sys.argv[1:]:
+    r_filename = None
+    r_flags = 0
+    w_filename = None
+    w_flags = 0
+    for arg in av:
         if arg.startswith('--'):
             if arg == '--help':
                 # This function does not return.
@@ -106,31 +98,49 @@ def udd(**kwargs):
                 r_filename = v
             elif k == 'of':
                 w_filename = v
-            continue # do not need to pass to dd CLI
+            continue  # do not need to pass to dd CLI
         if k == 'conv':
             if v == 'excl':
-                wflags |= os.O_EXCL
+                w_flags |= os.O_EXCL
         if k == 'iflag':
-            rflags |= _udd_parse_iflag(k, v)
+            r_flags |= _udd_parse_iflag(k, v)
         if k == 'oflag':
-            wflags |= _udd_parse_oflag(k, v)
+            w_flags |= _udd_parse_oflag(k, v)
 
         # Preserve CLI argument.
         newargv.append(arg)
+    return newargv, {
+            'r_filename': r_filename,
+            'r_flags': r_flags,
+            'w_filename': w_filename,
+            'w_flags': w_flags
+            }
 
+
+def udd(**kwargs):
+    if udd_is_privileged():
+        # Fast path: we are not needed at all.
+        # To work around a possibly insecure PATH,
+        # we try one of the following paths in order.
+        return call_privileged_dd(sys.argv)
+
+    rfd = None
+    wfd = None
+
+    newargv, opts = _read_dd_cli_arguments(sys.argv[1:])
     U = UDisks()
-    if r_filename:
-        logging.debug("Pre-opening if={}".format(r_filename))
+    if opts['r_filename']:
+        logging.debug("Pre-opening if={}".format(opts['r_filename']))
         try:
-            rfd = U.open_device(r_filename, os.O_RDONLY | rflags)
+            rfd = U.open_device(opts['r_filename'], os.O_RDONLY | opts['r_flags'])
         except dbus.exceptions.DBusException as e:
             logging.exception("DBus error reply: %s", e, exc_info=kwargs['exc_info'])
             return 1
         rfd = rfd.take()
-    if w_filename:
-        logging.debug("Pre-opening of={}".format(w_filename))
+    if opts['w_filename']:
+        logging.debug("Pre-opening of={}".format(opts['w_filename']))
         try:
-            wfd = U.open_device(w_filename, os.O_WRONLY | wflags)
+            wfd = U.open_device(opts['w_filename'], os.O_WRONLY | opts['w_flags'])
         except dbus.exceptions.DBusException as e:
             logging.exception("DBus error reply: %s", e, exc_info=kwargs['exc_info'])
             return 1
