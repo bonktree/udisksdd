@@ -66,5 +66,5 @@ class UDisks:
         openflags = flag & ~(os.O_RDWR | os.O_RDONLY | os.O_WRONLY)
 
         logging.debug("Opening {} with flags: {!r} / {}"
-                .format(blockdev_path, mode, flag))
+                      .format(blockdev_path, mode, util.repr_flag(flag)))
         return Block.OpenDevice(mode, {'flags': openflags})
