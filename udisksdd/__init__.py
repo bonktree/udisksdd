@@ -13,7 +13,11 @@ def main():
         exc_info = False
         loglevel = logging.INFO
     logging.basicConfig(stream=sys.stderr, level=loglevel)
-    return udd.udd(exc_info=exc_info)
+    try:
+        return udd.udd(exc_info=exc_info)
+    except Exception as e:
+        logging.exception("udd: %s", e, exc_info=exc_info)
+        return 1
 
 
 if __name__ == '__main__':
